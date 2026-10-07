@@ -1,0 +1,27 @@
+[
+  {
+    "question": "What services do you offer?",
+    "answer": "I build Flutter mobile apps, PHP and Python (FastAPI) backends, REST APIs, WordPress sites and SEO, plus security reviews. Send /contact to reach me.",
+    "keywords": ["services", "offer", "do you do", "build", "work"]
+  },
+  {
+    "question": "How much does a project cost?",
+    "answer": "It depends on scope. Small fixes start from $30 and complete apps are quoted after a short call. Send a short description of your project and I will reply with a quote.",
+    "keywords": ["price", "cost", "how much", "quote", "budget", "rate"]
+  },
+  {
+    "question": "How long does delivery take?",
+    "answer": "Small tasks take 1 to 3 days. A full mobile app or website usually takes 2 to 6 weeks, with weekly progress updates.",
+    "keywords": ["long", "delivery", "deadline", "time", "days", "weeks"]
+  },
+  {
+    "question": "Which payment methods do you accept?",
+    "answer": "Bank transfer in Naira, Paystack or Flutterwave payment links, and secure freelance platforms such as Fiverr.",
+    "keywords": ["pay", "payment", "transfer", "paystack", "flutterwave", "bank"]
+  },
+  {
+    "question": "How can I contact you?",
+    "answer": "Email josephobaje264@gmail.com or connect on LinkedIn: https://www.linkedin.com/in/joseph-obaje",
+    "keywords": ["contact", "email", "reach", "call", "phone", "linkedin"]
+  }
+]

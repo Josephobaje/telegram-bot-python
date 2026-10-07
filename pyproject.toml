@@ -1,0 +1,13 @@
+[project]
+name = "telegram-assistant-bot"
+version = "1.0.0"
+description = "Telegram bot with reminders, Naira exchange rates and FAQ answers (python-telegram-bot)."
+authors = [{ name = "Joseph Obaje", email = "josephobaje264@gmail.com" }]
+license = { text = "MIT" }
+requires-python = ">=3.10"
+dependencies = ["python-telegram-bot[job-queue]>=21.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
