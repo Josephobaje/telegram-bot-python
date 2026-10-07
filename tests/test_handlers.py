@@ -90,7 +90,7 @@ async def test_free_text_fallback():
 
 def test_build_application_registers_handlers():
     app = build_application("123456:TEST-TOKEN")
-    assert len(app.handlers[0]) == 9
+    assert len(app.handlers[0]) == 10
     assert app.job_queue is not None
 
 
@@ -101,3 +101,77 @@ def test_missing_token(monkeypatch, tmp_path):
     monkeypatch.delenv("TELEGRAM_BOT_TOKEN", raising=False)
     with pytest.raises(RuntimeError):
         load_settings()
+
+
+def test_contact_card_defaults():
+    from bot.config import ContactInfo
+
+    text = handlers.format_contact(ContactInfo())
+    assert "Joseph Obaje" in text
+    assert "josephobaje264@gmail.com" in text
+    assert "https://github.com/Josephobaje" in text
+    assert "Phone" not in text  # no default phone number
+
+
+async def test_contact_command_replies_with_configured_details():
+    from bot.config import ContactInfo
+
+    u, c = make_update(), make_context()
+    c.bot_data["contact"] = ContactInfo(name="Ada Lovelace", email="ada@example.com", phone="+234 800 000 0000", url="https://example.com")
+    await handlers.contact(u, c)
+    text = reply(u)
+    assert "Contact Ada Lovelace" in text
+    assert "ada@example.com" in text and "+234 800 000 0000" in text and "https://example.com" in text
+    kwargs = u.message.reply_text.await_args.kwargs
+    assert "parse_mode" not in kwargs  # plain text, so env values can't inject markup
+    assert kwargs["link_preview_options"].is_disabled
+
+
+async def test_contact_command_falls_back_to_defaults():
+    u, c = make_update(), make_context()  # no "contact" in bot_data
+    await handlers.contact(u, c)
+    assert "josephobaje264@gmail.com" in reply(u)
+
+
+def test_load_contact_from_env(monkeypatch):
+    from bot.config import load_contact
+
+    for key in ("CONTACT_NAME", "CONTACT_EMAIL", "CONTACT_PHONE", "CONTACT_URL"):
+        monkeypatch.delenv(key, raising=False)
+    assert load_contact().phone == ""
+    assert load_contact().email == "josephobaje264@gmail.com"
+
+    monkeypatch.setenv("CONTACT_NAME", "JO Digital")
+    monkeypatch.setenv("CONTACT_EMAIL", "  hello@example.com ")
+    monkeypatch.setenv("CONTACT_PHONE", "+234 801 234 5678")
+    monkeypatch.setenv("CONTACT_URL", "")  # empty falls back to the default
+    info = load_contact()
+    assert info.name == "JO Digital"
+    assert info.email == "hello@example.com"
+    assert info.phone == "+234 801 234 5678"
+    assert info.url == "https://github.com/Josephobaje"
+
+
+def test_load_settings_includes_contact(monkeypatch, tmp_path):
+    from bot.config import load_settings
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "123456:TEST-TOKEN")
+    monkeypatch.setenv("CONTACT_PHONE", "+234 802 000 0000")
+    assert load_settings().contact.phone == "+234 802 000 0000"
+
+
+def test_contact_listed_in_help_and_command_menu():
+    from bot.main import COMMANDS
+
+    assert "/contact" in handlers.HELP_TEXT
+    assert "contact" in dict(COMMANDS)
+
+
+def test_build_application_stores_contact(monkeypatch):
+    from bot.config import ContactInfo
+
+    monkeypatch.delenv("CONTACT_EMAIL", raising=False)
+    assert build_application("123456:TEST-TOKEN").bot_data["contact"].email == "josephobaje264@gmail.com"
+    custom = ContactInfo(name="Ada")
+    assert build_application("123456:TEST-TOKEN", contact=custom).bot_data["contact"] is custom

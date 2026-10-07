@@ -2,7 +2,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![python-telegram-bot](https://img.shields.io/badge/python--telegram--bot-v21%2B-26A5E4?logo=telegram&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-28%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-35%20passing-brightgreen)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 
 A Telegram bot for small businesses and freelancers, built with [python-telegram-bot](https://python-telegram-bot.org/) (async, v21+). It sets **reminders**, shows **exchange rates against the Naira**, converts currencies, and answers **frequently asked questions** in plain English.
@@ -18,6 +18,7 @@ A Telegram bot for small businesses and freelancers, built with [python-telegram
 | `/rate` | USD, GBP, EUR, CAD and GHS against the Naira |
 | `/convert 100 USD NGN` | Converts between currencies (also `/convert 50000 naira to dollar`) |
 | `/faq` | Shows all FAQ entries |
+| `/contact` | Shows your contact details (name, email, optional phone, website), set through `CONTACT_*` env vars |
 | any text | Matches the message against the FAQ by keywords and replies with the best answer |
 
 Also included:
@@ -27,7 +28,7 @@ Also included:
 - Reminders run on the built-in `JobQueue` (APScheduler), with a limit of 20 per chat.
 - FAQ answers live in `bot/faq.json`, so they can be edited without touching code.
 - The bot command menu is registered automatically on startup.
-- 28 tests cover the parsing logic and the handlers, using fakes, so no token or network is needed.
+- 35 tests cover the parsing logic and the handlers, using fakes, so no token or network is needed.
 
 ## Tech stack
 
@@ -57,6 +58,17 @@ Open your bot in Telegram and send `/start`.
 ### Live exchange rates
 
 Set `RATES_API_URL` in `.env` to an endpoint that returns `{"rates": {"USD": 1, "NGN": ...}}`, for example `https://open.er-api.com/v6/latest/USD`. Without it, `/rate` uses sample rates and says so.
+
+### Contact details
+
+`/contact` replies with a plain-text contact card. Configure it in `.env` (unset or empty values use the defaults):
+
+| Variable | Default |
+| --- | --- |
+| `CONTACT_NAME` | `Joseph Obaje` |
+| `CONTACT_EMAIL` | `josephobaje264@gmail.com` |
+| `CONTACT_PHONE` | none (the phone line is hidden) |
+| `CONTACT_URL` | `https://github.com/Josephobaje` |
 
 ### Deploying
 

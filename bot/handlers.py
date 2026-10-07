@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import logging
 
-from telegram import Update
+from telegram import LinkPreviewOptions, Update
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
 
+from .config import ContactInfo
 from .faq import best_answer
 from .rates import RateError, format_money, parse_convert_args
 from .reminders import ReminderError, humanize, parse_reminder
@@ -21,7 +22,8 @@ HELP_TEXT = (
     "/cancel - cancel all your reminders\n"
     "/rate - exchange rates against the Naira\n"
     "/convert &lt;amount&gt; &lt;from&gt; &lt;to&gt; - e.g. <code>/convert 100 USD NGN</code>\n"
-    "/faq - frequently asked questions\n\n"
+    "/faq - frequently asked questions\n"
+    "/contact - how to reach me\n\n"
     "Or just ask me a question in plain English."
 )
 
@@ -104,6 +106,24 @@ async def faq(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     entries = context.bot_data["faq"]
     text = "\n\n".join(f"<b>{e.question}</b>\n{e.answer}" for e in entries)
     await update.message.reply_text(text, parse_mode=ParseMode.HTML)
+
+
+def format_contact(contact: ContactInfo) -> str:
+    """Plain-text contact card. Lines with empty values are left out."""
+    lines = [f"📇 Contact {contact.name}", ""]
+    if contact.email:
+        lines.append(f"📧 Email: {contact.email}")
+    if contact.phone:
+        lines.append(f"📞 Phone: {contact.phone}")
+    if contact.url:
+        lines.append(f"🌐 Website: {contact.url}")
+    return "\n".join(lines)
+
+
+async def contact(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    info = context.bot_data.get("contact") or ContactInfo()
+    # Sent as plain text (no parse_mode), so values from env vars can't inject markup.
+    await update.message.reply_text(format_contact(info), link_preview_options=LinkPreviewOptions(is_disabled=True))
 
 
 async def text_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

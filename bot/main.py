@@ -8,7 +8,7 @@ from telegram import BotCommand
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 
 from . import handlers
-from .config import load_settings
+from .config import ContactInfo, load_contact, load_settings
 from .faq import load_faq
 from .rates import RateProvider
 
@@ -21,10 +21,13 @@ COMMANDS = [
     ("rate", "Exchange rates vs Naira"),
     ("convert", "Convert currencies"),
     ("faq", "Frequently asked questions"),
+    ("contact", "Contact details"),
 ]
 
 
-def build_application(token: str, rates_api_url: str = "", faq_path=None) -> Application:
+def build_application(
+    token: str, rates_api_url: str = "", faq_path=None, contact: ContactInfo | None = None
+) -> Application:
     from .config import Settings
 
     faq_file = faq_path or Settings(token=token).faq_path
@@ -35,6 +38,7 @@ def build_application(token: str, rates_api_url: str = "", faq_path=None) -> App
     app = Application.builder().token(token).post_init(post_init).build()
     app.bot_data["rates"] = RateProvider(api_url=rates_api_url)
     app.bot_data["faq"] = load_faq(faq_file)
+    app.bot_data["contact"] = contact or load_contact()
 
     app.add_handler(CommandHandler("start", handlers.start))
     app.add_handler(CommandHandler("help", handlers.help_command))
@@ -44,6 +48,7 @@ def build_application(token: str, rates_api_url: str = "", faq_path=None) -> App
     app.add_handler(CommandHandler("rate", handlers.rate))
     app.add_handler(CommandHandler("convert", handlers.convert))
     app.add_handler(CommandHandler("faq", handlers.faq))
+    app.add_handler(CommandHandler("contact", handlers.contact))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handlers.text_message))
     app.add_error_handler(handlers.error_handler)
     return app
@@ -53,7 +58,7 @@ def main() -> None:
     logging.basicConfig(format="%(asctime)s %(levelname)s %(name)s: %(message)s", level=logging.INFO)
     logging.getLogger("httpx").setLevel(logging.WARNING)
     settings = load_settings()
-    app = build_application(settings.token, settings.rates_api_url, settings.faq_path)
+    app = build_application(settings.token, settings.rates_api_url, settings.faq_path, settings.contact)
     logging.info("Bot is running. Press Ctrl+C to stop.")
     app.run_polling(allowed_updates=["message"])
 
